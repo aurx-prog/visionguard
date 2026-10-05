@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f4f7f3" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0c100e" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:," />
+  <title>VisionGuard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,600&display=swap');
+    :root{
+      color-scheme:light dark;
+      --bg:#f4f7f3;--surface:#fff;--surface-2:#e9efea;--ink:#142018;--muted:#526159;
+      --line:#cdd8d0;--brand:#067a4d;--brand-2:#005d3a;--brand-soft:#daf4e5;
+      --warn:#bc4b0b;--danger:#c52d27;--danger-soft:#fee4df;--live:#22b96d;
+      --shadow:0 18px 55px rgba(24,55,38,.13);--radius:22px;
+    }
+    @media (prefers-color-scheme:dark){
+      :root{--bg:#0c100e;--surface:#131a16;--surface-2:#1b241f;--ink:#eff7f1;--muted:#aebdb3;
+      --line:#334039;--brand:#4bdd94;--brand-2:#7cebb0;--brand-soft:#133929;--warn:#ff984f;
+      --danger:#ff766e;--danger-soft:#3c1e1b;--live:#54e99b;--shadow:0 20px 65px rgba(0,0,0,.34)}
+    }
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+    button,input,select{font:inherit}button{color:inherit}svg{display:block}
+    .page{width:min(1440px,100%);margin:auto;padding:clamp(18px,3vw,40px)}
+    .intro{display:flex;align-items:end;justify-content:space-between;gap:30px;margin:4px 0 24px}
+    .intro h1{font-family:Newsreader,Georgia,serif;font-size:clamp(36px,5vw,68px);line-height:.94;letter-spacing:-.035em;margin:0;max-width:650px}
+    .intro p{margin:0;max-width:470px;color:var(--muted);font-size:15px;line-height:1.65}
+    .workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:18px;align-items:start}
+    .camera-card{background:#050806;border-radius:28px;overflow:hidden;box-shadow:var(--shadow);position:relative;border:1px solid rgba(255,255,255,.1)}
+    .camera-top{height:54px;padding:0 14px 0 18px;display:flex;align-items:center;justify-content:space-between;color:#edf8f1;background:#0a0e0c;border-bottom:1px solid rgba(255,255,255,.1);gap:10px}
+    .status-group,.metrics,.control-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+    .status{font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}.dot{width:8px;height:8px;border-radius:50%;background:#829089}.dot.ready{background:var(--live);box-shadow:0 0 0 4px rgba(84,233,155,.12)}.dot.error{background:#ff6c61}
+    .metric{font-size:11px;color:#aebbb3;padding:5px 8px;background:#141a16;border-radius:6px;font-variant-numeric:tabular-nums}
+    .viewport{position:relative;width:100%;aspect-ratio:16/10;background:#070a08;overflow:hidden}
+    video,canvas{position:absolute;inset:0;width:100%;height:100%;display:block}video{background:#060807}canvas{pointer-events:none}
+    .start-screen{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:28px;background:radial-gradient(circle at 50% 40%,#192820 0,#080b09 60%);z-index:3;color:#f1f8f3}
+    .start-screen.hidden{display:none}.lens{width:76px;height:76px;margin:0 auto 20px;border:1px solid #6b8374;border-radius:50%;display:grid;place-items:center;position:relative}.lens:after{content:"";position:absolute;inset:11px;border:2px solid #38ce85;border-radius:50%;box-shadow:inset 0 0 20px rgba(56,206,133,.2)}
+    .start-screen h2{font-size:24px;margin:0 0 8px}.start-screen p{margin:0 auto 20px;color:#afbeb4;max-width:390px;line-height:1.55;font-size:14px}
+    .primary,.secondary,.ghost,.icon-btn{border:0;cursor:pointer;transition:background .2s,border-color .2s,opacity .2s,transform .15s}.primary:active,.secondary:active,.icon-btn:active{transform:translateY(1px)}
+    .primary{background:var(--brand);color:#fff;padding:12px 17px;border-radius:10px;font-weight:800}.primary:hover{background:var(--brand-2)}.primary:disabled,.secondary:disabled,.icon-btn:disabled{opacity:.45;cursor:not-allowed}
+    .secondary{background:var(--surface-2);border:1px solid var(--line);padding:10px 13px;border-radius:9px;font-weight:700}.secondary:hover{border-color:var(--brand)}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,.18);color:#e4eee7;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:700}.ghost:hover{background:rgba(255,255,255,.08)}
+    .camera-controls{min-height:66px;padding:10px 12px;background:#0a0e0c;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#ecf5ef}
+    .icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#19221d;border:1px solid rgba(255,255,255,.12)}.icon-btn:hover{background:#223029}.icon-btn.active{background:#0b673f;color:#fff;border-color:#39c981}.icon-btn.danger{background:#321815;color:#ff948d}
+    .center-action{border-radius:22px;width:auto;padding:0 16px;display:flex;gap:8px;font-weight:800;font-size:12px}
+    .error-banner{display:none;margin:12px 12px 0;padding:11px 13px;border-radius:10px;background:#3b1d19;color:#ffd7d2;font-size:12px;line-height:1.5;align-items:center;justify-content:space-between;gap:12px}.error-banner.show{display:flex}.error-banner span{min-width:0;overflow-wrap:anywhere}.error-retry{flex:0 0 auto;border:1px solid rgba(255,255,255,.28);border-radius:8px;background:#fff;color:#351713;padding:7px 10px;font:800 11px Manrope,system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.error-retry:hover{background:#ffe9e5}.error-retry[hidden]{display:none}.error-retry.loading:before{content:"";width:10px;height:10px;border:2px solid rgba(53,23,19,.3);border-top-color:#351713;border-radius:50%;animation:spin .75s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    .side{display:grid;gap:14px}
+    .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}.panel h2{font-size:16px;margin:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.panel-note{font-size:11px;color:var(--muted)}
+    .closest{min-height:156px;background:var(--brand-soft);border-color:transparent;display:flex;flex-direction:column;justify-content:space-between}.closest.danger-state{background:var(--danger-soft)}
+    .closest-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--muted)}.closest-main{display:flex;align-items:end;justify-content:space-between;gap:14px}.closest-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}.clear-readings{border:1px solid color-mix(in srgb,var(--brand) 42%,var(--line));background:transparent;color:var(--brand-2);border-radius:7px;padding:6px 9px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.clear-readings:hover{background:color-mix(in srgb,var(--brand-soft) 70%,transparent)}.object-name{font-size:23px;font-weight:800;text-transform:capitalize;margin:5px 0}.position{font-size:12px;color:var(--muted)}.distance{font-family:Newsreader,Georgia,serif;font-size:50px;line-height:.85;letter-spacing:-.04em;white-space:nowrap}.distance small{font-family:Manrope,sans-serif;font-size:14px;letter-spacing:0;font-weight:700}.accuracy{font-size:11px;color:var(--muted);margin-top:9px}
+    .feed{display:grid;gap:8px;max-height:262px;overflow:auto;scrollbar-width:thin}.feed-empty{padding:28px 12px;text-align:center;color:var(--muted);font-size:13px;line-height:1.55}.detection{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.detection:last-child{border-bottom:0}.detection-name{font-size:13px;font-weight:800;text-transform:capitalize}.detection-meta{font-size:11px;color:var(--muted);margin-top:2px}.detection-distance{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+    .setting{margin-top:15px}.setting-line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px}.setting label{font-size:12px;font-weight:700}.setting output{font-size:11px;color:var(--muted)}input[type=range]{width:100%;accent-color:var(--brand)}
+    .segmented{display:grid;grid-template-columns:repeat(3,1fr);padding:3px;background:var(--surface-2);border-radius:10px;gap:3px}.segmented button{border:0;background:transparent;padding:7px 5px;border-radius:7px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer}.segmented button.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 5px rgba(0,0,0,.1)}
+    .privacy{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;gap:9px;color:var(--muted);font-size:11px;line-height:1.5}.privacy svg{flex:0 0 auto;color:var(--brand);margin-top:1px}
+    .how{margin:22px 0 4px;display:grid;grid-template-columns:1.2fr repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}.how > div{background:var(--surface);padding:20px}.how h2{font-family:Newsreader,Georgia,serif;font-size:28px;line-height:1;margin:0 0 8px}.how p{font-size:12px;color:var(--muted);line-height:1.55;margin:0}.step-num{display:block;color:var(--brand);font-size:11px;font-weight:800;margin-bottom:18px}.how h3{font-size:14px;margin:0 0 7px}
+    .modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.62);display:none;align-items:end;justify-content:center;padding:20px}.modal.open{display:flex}.sheet{width:min(590px,100%);background:var(--surface);border-radius:24px;padding:24px;box-shadow:var(--shadow);max-height:90vh;overflow:auto}.sheet-head{display:flex;justify-content:space-between;gap:15px;align-items:start}.sheet h2{font-family:Newsreader,Georgia,serif;font-size:30px;margin:0 0 5px}.sheet p{color:var(--muted);font-size:13px;line-height:1.55;margin:0}.close{border:0;background:var(--surface-2);border-radius:50%;width:36px;height:36px;display:grid;place-items:center;cursor:pointer}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:800}.field input,.field select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:11px 12px;border-radius:9px;outline:0}.field input:focus,.field select:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 20%,transparent)}.cal-status{min-height:40px;padding:11px 12px;border-radius:9px;background:var(--surface-2);font-size:12px;color:var(--muted);margin-bottom:14px}.sheet-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:940px){.intro{align-items:start;flex-direction:column;gap:12px}.workspace{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.panel.settings{grid-column:1/-1}.how{grid-template-columns:1fr 1fr}.how>div:first-child{grid-column:1/-1}}
+    @media(max-width:620px){.page{padding:14px 12px 28px}.intro{margin-top:8px}.intro h1{font-size:42px;max-width:360px}.intro p{font-size:13px}.camera-card{border-radius:20px}.camera-top{height:auto;min-height:50px;align-items:flex-start;padding:12px}.metrics{justify-content:flex-end}.metric:nth-child(2){display:none}.viewport{aspect-ratio:4/5}.start-screen{padding:16px}.start-screen .lens{width:58px;height:58px;margin-bottom:12px}.start-screen h2{font-size:21px;margin-bottom:5px}.start-screen p{font-size:12px;line-height:1.45;margin-bottom:14px}.camera-controls{align-items:center}.control-row{gap:7px}.icon-btn{width:40px;height:40px}.center-action{padding:0 13px}.side{grid-template-columns:1fr}.panel.settings{grid-column:auto}.how{grid-template-columns:1fr}.how>div:first-child{grid-column:auto}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}.sheet{padding:20px}.modal{padding:10px}.status-group{min-width:0}.status{font-size:11px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="intro" aria-labelledby="main-title">
+      <h1 id="main-title">See what’s ahead.</h1>
+      <p>Point your camera at the scene. VisionGuard identifies common objects on-device, estimates their distance, and warns when something enters your safety zone.</p>
+    </section>
+
+    <section class="workspace" aria-label="Object detection workspace">
+      <div class="camera-card">
+        <div class="camera-top">
+          <div class="status-group"><span class="status"><i class="dot" id="modelDot"></i><span id="modelStatus">Loading detector…</span></span></div>
+          <div class="metrics"><span class="metric" id="fpsMetric">0 FPS</span><span class="metric" id="timeMetric">— ms</span><span class="metric" id="countMetric">0 objects</span></div>
+        </div>
+        <div class="error-banner" id="errorBanner" role="status"><span id="errorMessage"></span><button class="error-retry" id="errorRetry" type="button" hidden>Try again</button></div>
+        <div class="viewport" id="viewport">
+          <video id="video" autoplay muted playsinline aria-label="Live camera preview"></video>
+          <canvas id="overlay" aria-hidden="true"></canvas>
+          <div class="start-screen" id="startScreen">
+            <div>
+              <div class="lens" aria-hidden="true">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4 7.8A1.8 1.8 0 0 1 5.8 6h2l1-1.5h6L16 6h2.2A1.8 1.8 0 0 1 20 7.8v8.4a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 16.2V7.8Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg>
+              </div>
+              <h2>Camera is off</h2>
+              <p>Camera access is required for live detection. Frames stay in this browser and are never uploaded.</p>
+              <button class="primary" id="startButton">Start camera</button>
+            </div>
+          </div>
+        </div>
+        <div class="camera-controls">
+          <div class="control-row">
+            <button class="icon-btn" id="voiceButton" title="Toggle voice alerts" aria-label="Turn voice alerts on" aria-pressed="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M11 5 6.8 8.5H4v7h2.8L11 19V5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 9a4.2 4.2 0 0 1 0 6M17.7 6.5a7.7 7.7 0 0 1 0 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <button class="icon-btn" id="torchButton" title="Toggle torch" aria-label="Toggle torch" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m8 3 8 3-2 5v8H9v-8L8 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 11h5M11.5 19v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <button class="icon-btn center-action" id="switchButton" title="Switch camera" disabled>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M20 8a8.2 8.2 0 0 0-14.8-2L3 9m1-5-1 5 5-1M4 16a8.2 8.2 0 0 0 14.8 2L21 15m-1 5 1-5-5 1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Switch
+          </button>
+          <button class="icon-btn danger" id="stopButton" title="Stop camera" aria-label="Stop camera" disabled>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <aside class="side">
+        <section class="panel closest" id="closestPanel" aria-live="polite">
+          <div><div class="closest-label">Closest object</div><div class="object-name" id="closestName">Waiting for camera</div><div class="position" id="closestPosition">No scene data yet</div></div>
+          <div><div class="closest-main"><span class="distance" id="closestDistance">— <small>m</small></span><span class="closest-actions"><span class="closest-label" id="riskLabel"></span><button class="clear-readings" id="clearButton" type="button" title="Clear current readings">Clear</button></span></div><div class="accuracy" id="accuracyLabel">Calibrate the camera for better estimates</div></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><h2>Live detections</h2><span class="panel-note" id="feedNote">Confidence ≥ 55%</span></div>
+          <div class="feed" id="detectionFeed"><div class="feed-empty">Objects will appear here when the camera starts.</div></div>
+        </section>
+
+        <section class="panel settings">
+          <div class="panel-head"><h2>Detection controls</h2><button class="secondary" id="calibrateButton">Calibrate</button></div>
+          <div class="setting"><div class="setting-line"><label for="dangerRange">Safety zone</label><output id="dangerOutput">1.2 m</output></div><input id="dangerRange" type="range" min="0.4" max="4" step="0.1" value="1.2" /></div>
+          <div class="setting"><div class="setting-line"><label>Processing mode</label><output id="modeOutput">Balanced</output></div><div class="segmented" id="modeButtons"><button data-mode="eco">Eco</button><button class="active" data-mode="balanced">Balanced</button><button data-mode="detail">Detail</button></div></div>
+          <div class="privacy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 10V8a5 5 0 0 1 10 0v2m-9 0h8a2 2 0 0 1 2 2v7H6v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 14v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Detection runs locally in your browser. No camera frames are sent to a server.</span></div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="how" aria-label="How distance estimation works">
+      <div><h2>Better distance in three steps</h2><p>Distance is an estimate, not a safety instrument. A quick calibration matches the calculation to your camera.</p></div>
+      <div><span class="step-num">01</span><h3>Place a known object</h3><p>Use a person, bottle, or chair whose real height you can measure.</p></div>
+      <div><span class="step-num">02</span><h3>Measure the gap</h3><p>Stand it upright, enter its height and camera distance, then capture.</p></div>
+      <div><span class="step-num">03</span><h3>Keep the view steady</h3><p>Use the same camera and avoid steep angles for more consistent estimates.</p></div>
+    </section>
+  </main>
+
+  <div class="modal" id="calibrationModal" role="dialog" aria-modal="true" aria-labelledby="calTitle">
+    <div class="sheet">
+      <div class="sheet-head"><div><h2 id="calTitle">Camera calibration</h2><p>Choose a visible object, then enter its real height and measured distance from the camera.</p></div><button class="close" id="closeModal" aria-label="Close calibration"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+      <div class="fields">
+        <div class="field full"><label for="calObject">Visible object</label><select id="calObject"><option value="">Start camera to find objects</option></select></div>
+        <div class="field"><label for="calHeight">Actual object height (metres)</label><input id="calHeight" type="number" inputmode="decimal" min="0.05" max="10" step="0.01" placeholder="e.g. 1.70" /></div>
+        <div class="field"><label for="calDistance">Measured camera distance (metres)</label><input id="calDistance" type="number" inputmode="decimal" min="0.1" max="50" step="0.1" placeholder="e.g. 2.0" /></div>
+      </div>
+      <div class="cal-status" id="calStatus">No calibration saved for this visit.</div>
+      <div class="sheet-actions"><button class="secondary" id="resetCalibration">Reset</button><button class="primary" id="captureCalibration">Capture calibration</button></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      'use strict';
+      var video=document.getElementById('video'),canvas=document.getElementById('overlay'),ctx=canvas.getContext('2d');
+      var startScreen=document.getElementById('startScreen'),startButton=document.getElementById('startButton');
+      var stopButton=document.getElementById('stopButton'),switchButton=document.getElementById('switchButton'),torchButton=document.getElementById('torchButton'),voiceButton=document.getElementById('voiceButton');
+      var errorBanner=document.getElementById('errorBanner'),errorMessage=document.getElementById('errorMessage'),errorRetry=document.getElementById('errorRetry'),modelStatus=document.getElementById('modelStatus'),modelDot=document.getElementById('modelDot');
+      var fpsMetric=document.getElementById('fpsMetric'),timeMetric=document.getElementById('timeMetric'),countMetric=document.getElementById('countMetric');
+      var feed=document.getElementById('detectionFeed'),closestPanel=document.getElementById('closestPanel'),closestName=document.getElementById('closestName'),closestPosition=document.getElementById('closestPosition'),closestDistance=document.getElementById('closestDistance'),riskLabel=document.getElementById('riskLabel'),accuracyLabel=document.getElementById('accuracyLabel'),clearButton=document.getElementById('clearButton');
+      var dangerRange=document.getElementById('dangerRange'),dangerOutput=document.getElementById('dangerOutput');
+      var modal=document.getElementById('calibrationModal'),calObject=document.getElementById('calObject'),calHeight=document.getElementById('calHeight'),calDistance=document.getElementById('calDistance'),calStatus=document.getElementById('calStatus');
+      var state={model:null,modelPromise:null,stream:null,running:false,busy:false,facing:'environment',predictions:[],voice:false,torch:false,focalY:null,lastSpoken:0,lastFrame:0,fps:0,mode:'balanced',timer:null,errorAction:null,errorKind:null,clearUntil:0};
+      var librarySources={
+        tf:['https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js','https://unpkg.com/@tensorflow/tfjs@4.17.0/dist/tf.min.js'],
+        coco:['https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js','https://unpkg.com/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js']
+      };
+      var assumedHeights={person:1.7,bicycle:1.1,car:1.5,motorcycle:1.1,bus:3.1,truck:3.0,bench:.8,bird:.2,cat:.25,dog:.55,horse:1.6,sheep:.85,cow:1.4,elephant:3,bear:1.4,zebra:1.5,giraffe:4.3,backpack:.45,umbrella:.8,handbag:.35,suitcase:.65,bottle:.25,'wine glass':.18,cup:.12,fork:.18,knife:.22,spoon:.18,bowl:.1,banana:.18,apple:.08,sandwich:.1,orange:.08,broccoli:.22,carrot:.18,'hot dog':.16,pizza:.3,donut:.1,cake:.15,chair:.9,couch:.85,'potted plant':.55,bed:.65,'dining table':.75,toilet:.75,tv:.55,laptop:.23,mouse:.04,remote:.18,keyboard:.15,'cell phone':.15,microwave:.3,oven:.6,toaster:.2,sink:.3,refrigerator:1.75,book:.24,clock:.25,vase:.3,scissors:.2,'teddy bear':.3,'hair drier':.25,toothbrush:.18};
+      var modes={eco:{interval:520,score:.62},balanced:{interval:280,score:.55},detail:{interval:150,score:.48}};
+      function setError(message,actionLabel,action,kind){
+        errorMessage.textContent=message||'';state.errorAction=typeof action==='function'?action:null;state.errorKind=message?(kind||null):null;
+        errorRetry.textContent=actionLabel||'Try again';errorRetry.hidden=!state.errorAction;errorRetry.disabled=false;errorRetry.classList.remove('loading');
+        errorBanner.classList.toggle('show',!!message)
+      }
+      function setModelStatus(text,type){modelStatus.textContent=text;modelDot.className='dot'+(type?' '+type:'')}
+      function libraryAvailable(name){return name==='tf'?!!(window.tf&&typeof window.tf.ready==='function'):!!(window.cocoSsd&&typeof window.cocoSsd.load==='function')}
+      function removeLibraryScripts(){document.querySelectorAll('script[data-visionguard-lib]').forEach(function(node){node.remove()})}
+      function loadScript(url,name,attempt){
+        return new Promise(function(resolve,reject){
+          var script=document.createElement('script'),done=false;
+          var requested=url+(attempt?'?visionguard_retry='+Date.now():'');
+          var timer=setTimeout(function(){finish(new Error('Timed out: '+url))},18000);
+          function finish(error){if(done)return;done=true;clearTimeout(timer);script.onload=null;script.onerror=null;if(error){script.remove();reject(error)}else resolve(url)}
+          script.src=requested;script.async=true;script.crossOrigin='anonymous';script.dataset.visionguardLib=name;
+          script.onload=function(){if(libraryAvailable(name))finish();else finish(new Error('Loaded but did not initialize: '+url))};
+          script.onerror=function(){finish(new Error('Failed: '+url))};document.head.appendChild(script)
+        })
+      }
+      async function ensureLibrary(name,attempt,failures){
+        if(libraryAvailable(name))return;
+        var urls=librarySources[name];
+        for(var i=0;i<urls.length;i++){
+          try{setModelStatus('Loading '+(name==='tf'?'TensorFlow.js':'object detector')+'…','');await loadScript(urls[i],name,attempt);return}catch(e){failures.push(e&&e.message?e.message:'Failed: '+urls[i])}
+        }
+        throw new Error('Detection library failed to load. Tried: '+failures.join(' | '))
+      }
+      async function prepareLibraries(attempt){
+        var failures=[];
+        if(attempt){removeLibraryScripts();if(!libraryAvailable('tf')){try{delete window.tf}catch(ignore){}}if(!libraryAvailable('coco')){try{delete window.cocoSsd}catch(ignore){}}}
+        await ensureLibrary('tf',attempt,failures);await ensureLibrary('coco',attempt,failures);
+        if(!libraryAvailable('tf')||!libraryAvailable('coco'))throw new Error('Detection libraries did not initialize. Tried: '+failures.join(' | '));
+        return failures
+      }
+      async function loadModel(forceRetry){
+        if(state.model&&!forceRetry)return state.model;
+        if(state.modelPromise)return state.modelPromise;
+        if(forceRetry&&state.model&&typeof state.model.dispose==='function'){state.model.dispose();state.model=null}
+        state.modelPromise=(async function(){
+          try{
+            setModelStatus(forceRetry?'Retrying detector…':'Loading detector…','');
+            await prepareLibraries(!!forceRetry);
+            setModelStatus('Preparing detector…','');await window.tf.ready();
+            if(typeof window.tf.setBackend==='function'){
+              var webglReady=false;
+              try{webglReady=await window.tf.setBackend('webgl')}catch(ignore){}
+              if(!webglReady){try{await window.tf.setBackend('cpu')}catch(ignore){}}
+              await window.tf.ready();
+            }
+            state.model=await window.cocoSsd.load({base:'lite_mobilenet_v2'});setModelStatus('Detector ready','ready');
+            if(state.errorKind==='detector')setError('');if(state.running)scheduleDetection(0);return state.model;
+          }catch(e){
+            state.model=null;setModelStatus('Detector unavailable','error');
+            setError(e&&e.message?e.message:'Could not load object detection. Check your network and try again.','Retry detector',retryDetector,'detector');
+            throw e;
+          }finally{state.modelPromise=null}
+        })();
+        return state.modelPromise;
+      }
+      async function retryDetector(){
+        errorRetry.disabled=true;errorRetry.classList.add('loading');errorRetry.textContent='Retrying…';setModelStatus('Retrying detector…','');
+        try{return await loadModel(true)}finally{if(!errorRetry.hidden){errorRetry.disabled=false;errorRetry.classList.remove('loading');errorRetry.textContent='Retry detector'}}
+      }
+      async function requestCameraStream(){
+        var preferred={audio:false,video:{facingMode:{ideal:state.facing},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:24,max:30}}};
+        try{return await navigator.mediaDevices.getUserMedia(preferred)}catch(e){
+          if(e&&(e.name==='OverconstrainedError'||e.name==='ConstraintNotSatisfiedError'))return navigator.mediaDevices.getUserMedia({audio:false,video:true});
+          throw e;
+        }
+      }
+      async function startCamera(){
+        setError('');startButton.disabled=true;startButton.textContent='Starting…';
+        if(!window.isSecureContext){setError('Camera access requires a secure HTTPS page. Open the published VisionGuard link in Chrome or Safari.','Retry camera',startCamera,'camera');startButton.disabled=false;startButton.textContent='Try again';return}
+        if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setError('This browser cannot provide camera access here. Open the published VisionGuard link directly in current Chrome or Safari.','Retry camera',startCamera,'camera');startButton.disabled=false;startButton.textContent='Try again';return}
+        try{
+          stopStream();state.stream=await requestCameraStream();video.srcObject=state.stream;
+          await new Promise(function(resolve){if(video.readyState>=1)resolve();else video.onloadedmetadata=resolve});
+          await video.play();
+          canvas.width=video.videoWidth;canvas.height=video.videoHeight;document.getElementById('viewport').style.aspectRatio=video.videoWidth+'/'+video.videoHeight;
+          state.running=true;startScreen.classList.add('hidden');stopButton.disabled=false;switchButton.disabled=false;detectTorch();updateEmpty('Looking for objects…');
+          if(state.model)scheduleDetection(0);else loadModel().catch(function(){});
+        }catch(e){
+          stopStream();var name=e&&e.name?e.name:'';var msg='Could not start the camera. Check the browser camera setting and try again.';
+          if(name==='NotAllowedError'||name==='PermissionDeniedError'||name==='SecurityError')msg='Camera access is blocked for this page. Tap Retry camera and approve the prompt. If it still fails, open the published VisionGuard link directly in Chrome or Safari and allow Camera for that site.';
+          else if(name==='NotReadableError'||name==='TrackStartError'||name==='AbortError')msg='The camera is being used by another app or browser tab. Close other camera apps, then retry.';
+          else if(name==='NotFoundError'||name==='DevicesNotFoundError'||name==='OverconstrainedError'||name==='ConstraintNotSatisfiedError')msg='No suitable camera was found. Check that this device has an available camera, then retry.';
+          setError(msg,'Retry camera',startCamera,'camera');startScreen.classList.remove('hidden');
+        }finally{startButton.disabled=false;startButton.textContent='Start camera'}
+      }
+      function stopStream(){
+        state.running=false;state.busy=false;if(state.timer){clearTimeout(state.timer);state.timer=null}
+        if(state.stream){state.stream.getTracks().forEach(function(t){t.stop()});state.stream=null}
+        video.srcObject=null;ctx.clearRect(0,0,canvas.width,canvas.height);state.predictions=[];state.torch=false;torchButton.classList.remove('active');torchButton.disabled=true;
+      }
+      function stopCamera(){stopStream();startScreen.classList.remove('hidden');stopButton.disabled=true;switchButton.disabled=true;fpsMetric.textContent='0 FPS';timeMetric.textContent='— ms';countMetric.textContent='0 objects';updateEmpty('Objects will appear here when the camera starts.');updateClosest([])}
+      async function switchCamera(){state.facing=state.facing==='environment'?'user':'environment';switchButton.disabled=true;await startCamera();switchButton.disabled=!state.running}
+      function detectTorch(){var track=state.stream&&state.stream.getVideoTracks()[0];var caps=track&&track.getCapabilities?track.getCapabilities():{};torchButton.disabled=!caps.torch}
+      async function toggleTorch(){
+        var track=state.stream&&state.stream.getVideoTracks()[0];if(!track)return;
+        try{state.torch=!state.torch;await track.applyConstraints({advanced:[{torch:state.torch}]});torchButton.classList.toggle('active',state.torch)}catch(e){state.torch=false;torchButton.classList.remove('active');setError('Torch control is not supported by this camera.')}
+      }
+      function scheduleDetection(delay){if(!state.running||!state.model||state.timer)return;state.timer=setTimeout(function(){state.timer=null;detectFrame()},delay)}
+      async function detectFrame(){
+        if(!state.running||!state.model||state.busy||video.readyState<2){scheduleDetection(200);return}
+        state.busy=true;var t0=performance.now();
+        try{
+          var results=await state.model.detect(video,20,modes[state.mode].score);var elapsed=performance.now()-t0;
+          if(performance.now()<state.clearUntil){timeMetric.textContent=Math.round(elapsed)+' ms';countMetric.textContent='0 objects';state.busy=false;scheduleDetection(modes[state.mode].interval);return}
+          state.predictions=results.map(enrich).filter(function(p){return p.distance!==null}).sort(function(a,b){return a.distance-b.distance});
+          draw(results);updateFeed(state.predictions);updateClosest(state.predictions);updateCalibrationChoices(results);
+          var now=performance.now();state.fps=state.lastFrame?1000/(now-state.lastFrame):0;state.lastFrame=now;
+          fpsMetric.textContent=Math.round(state.fps)+' FPS';timeMetric.textContent=Math.round(elapsed)+' ms';countMetric.textContent=results.length+' object'+(results.length===1?'':'s');maybeSpeak(state.predictions[0]);
+        }catch(e){setError('Detection paused because the model hit an error. Restart the camera to try again.');console.error(e)}
+        state.busy=false;scheduleDetection(modes[state.mode].interval);
+      }
+      function estimatedFocal(){if(state.focalY)return state.focalY;var h=video.videoHeight||720,w=video.videoWidth||1280,hfov=65*Math.PI/180;var vfov=2*Math.atan(Math.tan(hfov/2)*(h/w));return h/(2*Math.tan(vfov/2))}
+      function enrich(p){var real=assumedHeights[p.class];if(!real||p.bbox[3]<10)return Object.assign({},p,{distance:null});var d=real*estimatedFocal()/p.bbox[3];var center=p.bbox[0]+p.bbox[2]/2;var position=center<(video.videoWidth*.38)?'left':center>(video.videoWidth*.62)?'right':'center';return Object.assign({},p,{distance:d,position:position,calibrated:!!state.focalY})}
+      function draw(preds){
+        ctx.clearRect(0,0,canvas.width,canvas.height);ctx.font='700 14px Manrope, sans-serif';ctx.textBaseline='top';
+        preds.forEach(function(p){var e=enrich(p),x=p.bbox[0],y=p.bbox[1],w=p.bbox[2],h=p.bbox[3];var danger=e.distance!==null&&e.distance<=parseFloat(dangerRange.value);var color=danger?'#ff5147':'#4be397';ctx.strokeStyle=color;ctx.lineWidth=Math.max(2,canvas.width/500);ctx.strokeRect(x,y,w,h);var label=p.class+'  '+Math.round(p.score*100)+'%'+(e.distance!==null?' · '+formatDistance(e.distance):'');var tw=ctx.measureText(label).width+16,lh=28,ly=Math.max(0,y-lh);ctx.fillStyle=danger?'rgba(184,30,24,.92)':'rgba(3,103,62,.92)';ctx.fillRect(x,ly,tw,lh);ctx.fillStyle='#fff';ctx.fillText(label,x+8,ly+7)})
+      }
+      function formatDistance(d){if(d<1)return Math.round(d*100)+' cm';return d.toFixed(1)+' m'}
+      function clearReadings(){state.clearUntil=performance.now()+1200;state.predictions=[];ctx.clearRect(0,0,canvas.width,canvas.height);updateClosest([]);updateEmpty(state.running?'Readings cleared. Scanning resumes…':'Objects will appear here when the camera starts.');countMetric.textContent='0 objects'}
+      function updateFeed(items){
+        if(!items.length){updateEmpty(state.running?'No supported objects detected yet. Try a brighter view.':'Objects will appear here when the camera starts.');return}
+        feed.innerHTML='';items.slice(0,8).forEach(function(p){var row=document.createElement('div');row.className='detection';var a=document.createElement('div');a.innerHTML='<div class="detection-name"></div><div class="detection-meta"></div>';a.querySelector('.detection-name').textContent=p.class;a.querySelector('.detection-meta').textContent=Math.round(p.score*100)+'% confidence · '+p.position;var b=document.createElement('div');b.className='detection-distance';b.textContent=formatDistance(p.distance);row.appendChild(a);row.appendChild(b);feed.appendChild(row)})
+      }
+      function updateEmpty(text){feed.innerHTML='';var e=document.createElement('div');e.className='feed-empty';e.textContent=text;feed.appendChild(e)}
+      function updateClosest(items){
+        var p=items[0];if(!p){closestName.textContent=state.running?'Scanning scene':'Waiting for camera';closestPosition.textContent=state.running?'Move slowly for a stable reading':'No scene data yet';closestDistance.innerHTML='— <small>m</small>';riskLabel.textContent='';accuracyLabel.textContent=state.focalY?'Camera calibrated for this visit':'Calibrate the camera for better estimates';closestPanel.classList.remove('danger-state');return}
+        var danger=p.distance<=parseFloat(dangerRange.value);closestName.textContent=p.class;closestPosition.textContent=p.position+' · '+Math.round(p.score*100)+'% confidence';closestDistance.innerHTML=(p.distance<1?(p.distance*100).toFixed(0)+' <small>cm</small>':p.distance.toFixed(1)+' <small>m</small>');riskLabel.textContent=danger?'Inside safety zone':'';accuracyLabel.textContent=p.calibrated?'Using your camera calibration':'Approximate · calibrate for better estimates';closestPanel.classList.toggle('danger-state',danger)
+      }
+      function maybeSpeak(p){if(!state.voice||!p||p.distance>parseFloat(dangerRange.value))return;var now=Date.now();if(now-state.lastSpoken<4000)return;state.lastSpoken=now;var words=p.distance<1?Math.round(p.distance*100)+' centimeters':p.distance.toFixed(1)+' meters';var u=new SpeechSynthesisUtterance('Warning. '+p.class+' '+words+' '+p.position+'.');u.rate=1.05;u.volume=1;speechSynthesis.cancel();speechSynthesis.speak(u)}
+      function toggleVoice(){state.voice=!state.voice;voiceButton.classList.toggle('active',state.voice);voiceButton.setAttribute('aria-pressed',String(state.voice));voiceButton.setAttribute('aria-label',state.voice?'Turn voice alerts off':'Turn voice alerts on');if(state.voice){var u=new SpeechSynthesisUtterance('Voice alerts on.');u.volume=.8;speechSynthesis.speak(u)}else speechSynthesis.cancel()}
+      function updateCalibrationChoices(results){
+        var selected=calObject.value;var seen={};calObject.innerHTML='';results.filter(function(p){return assumedHeights[p.class]&&!seen[p.class]&&(seen[p.class]=true)}).forEach(function(p){var o=document.createElement('option');o.value=p.class;o.textContent=p.class+' · '+Math.round(p.score*100)+'%';calObject.appendChild(o)});if(selected&&seen[selected])calObject.value=selected;if(!calObject.options.length){var o=document.createElement('option');o.value='';o.textContent=state.running?'No measurable object visible':'Start camera to find objects';calObject.appendChild(o)}}
+      function captureCalibration(){
+        var cls=calObject.value,height=parseFloat(calHeight.value),distance=parseFloat(calDistance.value);var match=null;state.predictions.concat([]).forEach(function(p){if(p.class===cls&&(!match||p.bbox[3]>match.bbox[3]))match=p});
+        if(!cls||!match){calStatus.textContent='Keep the selected object fully visible, then try again.';return}if(!height||height<.05||height>10||!distance||distance<.1||distance>50){calStatus.textContent='Enter valid height and distance measurements.';return}
+        state.focalY=distance*match.bbox[3]/height;calStatus.textContent='Calibrated with '+cls+'. This setting lasts until you close or refresh the page.';accuracyLabel.textContent='Using your camera calibration';setTimeout(function(){modal.classList.remove('open')},700)
+      }
+      function resetCalibration(){state.focalY=null;calStatus.textContent='Calibration reset. Using the camera’s estimated field of view.';accuracyLabel.textContent='Calibrate the camera for better estimates'}
+      startButton.addEventListener('click',startCamera);errorRetry.addEventListener('click',function(){if(state.errorAction){var result=state.errorAction();if(result&&typeof result.catch==='function')result.catch(function(){})}});stopButton.addEventListener('click',stopCamera);switchButton.addEventListener('click',switchCamera);torchButton.addEventListener('click',toggleTorch);voiceButton.addEventListener('click',toggleVoice);clearButton.addEventListener('click',clearReadings);
+      dangerRange.addEventListener('input',function(){dangerOutput.textContent=parseFloat(this.value).toFixed(1)+' m';updateClosest(state.predictions)});
+      document.getElementById('modeButtons').addEventListener('click',function(e){var b=e.target.closest('button[data-mode]');if(!b)return;state.mode=b.dataset.mode;this.querySelectorAll('button').forEach(function(x){x.classList.toggle('active',x===b)});document.getElementById('modeOutput').textContent=b.textContent;document.getElementById('feedNote').textContent='Confidence ≥ '+Math.round(modes[state.mode].score*100)+'%'});
+      document.getElementById('calibrateButton').addEventListener('click',function(){modal.classList.add('open');calStatus.textContent=state.focalY?'Calibration is active for this visit.':'No calibration saved for this visit.'});document.getElementById('closeModal').addEventListener('click',function(){modal.classList.remove('open')});modal.addEventListener('click',function(e){if(e.target===modal)modal.classList.remove('open')});document.addEventListener('keydown',function(e){if(e.key==='Escape')modal.classList.remove('open')});document.getElementById('captureCalibration').addEventListener('click',captureCalibration);document.getElementById('resetCalibration').addEventListener('click',resetCalibration);
+      window.addEventListener('pagehide',stopStream);loadModel().catch(function(){});
+    })();
+  </script>
+</body>
+</html>
